@@ -40,6 +40,9 @@ def load_data(csv_path, dummy_col=None, is_train=True):
     load csv data. it will drop categorical col unless it is specified in the 'dummy_col'
     column specified in the dummy_col would be converted into indicator variable
     (see https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html)
+
+    NOTE: this loading method might not be suitable for random forest, 
+    as there is not need to convert categorial col to dummy
     """
     drop_col = [
         "id",
