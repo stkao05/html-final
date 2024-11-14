@@ -1,3 +1,12 @@
+## Overview
+
+`data/`: competition data, unmodified
+
+`/data_loader.py`: a script that feature engineers the competition data (e.g. filling missing value) so that model could better fit the data. 
+
+`data_fill/`: datas that have been processed. It should have no missing value in its numerical column (but still could have missing value in its categorical col). The detail of processing method could be view at `/data_loader.py`
+
+
 ## Setup
 
 ```
@@ -9,3 +18,11 @@ pip install -r requirements.txt
 ```
 pytest test_data_loader.py
 ```
+
+
+## Benchmark
+
+| Algorithm   | Feature engineering | Validation method | Validation acc  | Test acc (submission)  |
+|------------|------------|------------|------------|
+| logistic | using /data_fill data | random 1/5 train & valid split | 0.5714 |  0.57359
+| LGBM | see `lgbm.ipynb` | train: Jan-June, validation: July | 0.5671 | 0.59554
