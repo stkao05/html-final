@@ -24,8 +24,8 @@ pytest test_data_loader.py
 
 ### Test 1
 
-| Algorithm   | Feature engineering | Validation method | Validation acc  | Test acc (submission)  |
-|------------|------------|------------|------------|
-| logistic | using /data_fill data | random 1/5 train & valid split | 0.5714 |  0.57359 |
-| logistic | using /data_fill data | 5 CV | 0.5588 |  0.57650 |
-| LGBM | see `lgbm.ipynb` | train: Jan-June, validation: July | 0.5671 | 0.59554 |
+| Algorithm   | Feature engineering    | Validation method                      | Validation acc | Test acc (submission) |
+|-------------|------------------------|----------------------------------------|----------------|------------------------|
+| logistic    | using /data_fill data  | random 1/5 train & valid split        | 0.5714         | 0.57359                |
+| logistic    | using /data_fill data  | 5 CV                                  | 0.5588         | 0.57650                |
+| LGBM        | see `lgbm.ipynb`       | train: Jan-June, validation: July     | 0.5671         | 0.59554                |
