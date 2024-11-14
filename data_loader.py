@@ -17,11 +17,6 @@ from datetime import datetime
 import tqdm
 import numpy as np
 
-# column that we can safely dropped without lossing information
-drop_col = [
-    "home_team_season",  # can be infer base team and season
-    "away_team_season",
-]
 
 # non-float coloumns. you can still treat some of the
 # column as continous if you prefer (i.e. date)
@@ -38,6 +33,7 @@ COL_CATEGORICAL = [
     "home_team_season",
     "away_team_season",
 ]
+
 
 def load_data(csv_path, dummy_col=None, is_train=True):
     """
@@ -58,9 +54,6 @@ def load_data(csv_path, dummy_col=None, is_train=True):
         "away_team_season",
     ]
 
-    if not is_train:
-        drop_col.remove("date") # test set does not have this
-
     df = pd.read_csv(csv_path)
 
     # convert categorical into one-hot
@@ -73,7 +66,7 @@ def load_data(csv_path, dummy_col=None, is_train=True):
     data_x = df[feature_col]
 
     if is_train:
-        data_y = df[['home_team_win']].values.ravel()
+        data_y = df[["home_team_win"]].values.ravel()
         return data_x, data_y
     else:
         return data_x
@@ -90,16 +83,31 @@ def process_data(src, dest):
     fill_all_team_stat(df)
     fill_night_game(df)
 
+    # TODO: not the best heuristic. but there is only one test
+    # sample that have missing season after fill_season() so it should
+    # be okay?
+    df["season"] = df["season"].fillna(df["season"].median())
+
     # fill rest of numerical column by mean
     df.fillna(df.select_dtypes(include="float").mean(), inplace=True)
-    df.drop(columns=drop_col, inplace=True)
+
+    # this should be harmless, as we have the same info in home_team and season
+    # TODO: not sure, maybe helpful to have team and season feature combined as one
+    df.drop(
+        columns=[
+            "home_team_season",
+            "away_team_season",
+        ],
+        inplace=True,
+    )
+
     df.to_csv(dest, index=False)
 
 
 def fill_night_game(df):
     true_ratio = df["is_night_game"].mean()
     false_ratio = 1 - true_ratio
-    df["boolean_column"] = df["boolean_column"].apply(
+    df["is_night_game"] = df["is_night_game"].apply(
         lambda x: np.random.choice([True, False], p=[true_ratio, false_ratio])
         if pd.isna(x)
         else x
@@ -182,7 +190,7 @@ def fill_all_team_stat(df):
 
 if __name__ == "__main__":
     process_data("data/task1/train_data.csv", "data_fill/train_data.csv")
-    process_data("data/task1/same_season_test_data.csv", "data_fill/task1_test_data.csv")
+    process_data(
+        "data/task1/same_season_test_data.csv", "data_fill/task1_test_data.csv"
+    )
     process_data("data/task2/2024_test_data.csv", "data_fill/task2_test_data.csv")
-
-# %%
