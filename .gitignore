@@ -2,3 +2,4 @@ catboost_info/
 src/__pycache__
 **/__pycache__
 .vscode
+logistic_task_1_submission.csv

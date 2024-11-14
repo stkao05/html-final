@@ -39,11 +39,50 @@ COL_CATEGORICAL = [
     "away_team_season",
 ]
 
+def load_data(csv_path, dummy_col=None, is_train=True):
+    """
+    load csv data. it will drop categorical col unless it is specified in the 'dummy_col'
+    column specified in the dummy_col would be converted into indicator variable
+    (see https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html)
+    """
+    drop_col = [
+        "id",
+        "season",
+        "home_team_abbr",
+        "away_team_abbr",
+        "date",
+        "is_night_game",
+        "home_pitcher",
+        "away_pitcher",
+        "home_team_season",
+        "away_team_season",
+    ]
 
-def load_and_fill(path):
-    print("loading", path)
+    if not is_train:
+        drop_col.remove("date") # test set does not have this
 
-    df = pd.read_csv(path)
+    df = pd.read_csv(csv_path)
+
+    # convert categorical into one-hot
+    if dummy_col:
+        df = pd.get_dummies(df, columns=dummy_col)
+
+    df.drop(columns=drop_col, inplace=True, errors="ignore")
+
+    feature_col = [_ for _ in df.columns.tolist() if _ != "home_team_win"]
+    data_x = df[feature_col]
+
+    if is_train:
+        data_y = df[['home_team_win']].values.ravel()
+        return data_x, data_y
+    else:
+        return data_x
+
+
+def process_data(src, dest):
+    print("processing: ", src)
+
+    df = pd.read_csv(src)
     if "date" in df.columns:
         df["date"] = pd.to_datetime(df["date"], errors="raise")
 
@@ -54,8 +93,7 @@ def load_and_fill(path):
     # fill rest of numerical column by mean
     df.fillna(df.select_dtypes(include="float").mean(), inplace=True)
     df.drop(columns=drop_col, inplace=True)
-
-    return df
+    df.to_csv(dest, index=False)
 
 
 def fill_night_game(df):
@@ -142,28 +180,9 @@ def fill_all_team_stat(df):
         fill_stat(df, stat)
 
 
-if __name__ == "main":
-    train_df = load_and_fill("data/task1/train_data.csv")
-    test1_df = load_and_fill("data/task1/same_season_test_data.csv")
-    test2_df = load_and_fill("data/task2/2024_test_data.csv")
+if __name__ == "__main__":
+    process_data("data/task1/train_data.csv", "data_fill/train_data.csv")
+    process_data("data/task1/same_season_test_data.csv", "data_fill/task1_test_data.csv")
+    process_data("data/task2/2024_test_data.csv", "data_fill/task2_test_data.csv")
 
-    train_df.to_csv("data_fill/train_data.csv", index=False)
-    test1_df.to_csv("data_fill/task1_test_data.csv", index=False)
-    test2_df.to_csv("data_fill/task2_test_data.csv", index=False)
-
-# pd.set_option("display.max_rows", None)
-# df = pd.read_csv("data_fill/train_data.csv")
-# missing_df = pd.DataFrame(
-#     {
-#         "type": df.dtypes,
-#         "missing": df.isnull().any(),
-#         "missing count": df.isnull().sum(),
-#         "missing percentage": (df.isnull().sum() / len(df)) * 100,
-#     }
-# )
-# missing_df.sort_values(by="missing percentage", ascending=False, inplace=True)
-# missing_df
-# df['is_night_game'].describe()
-
-# non_float_columns = df.select_dtypes(exclude="float").columns.tolist()
-# non_float_columns
+# %%
